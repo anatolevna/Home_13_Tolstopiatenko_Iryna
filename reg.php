@@ -10,17 +10,18 @@ function test_input($data)
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $user_name = mysqli_real_escape_string($conn, test_input($_POST['user_name']));
-    $last_name = mysqli_real_escape_string($conn, test_input($_POST['last_name']));
-    $first_name = mysqli_real_escape_string($conn, test_input($_POST ['first_name']));
-    $birthday = mysqli_real_escape_string($conn, test_input($_POST['birthday']));
-    $gender = mysqli_real_escape_string($conn, test_input($_POST['gender']));
-    $hobbies = mysqli_real_escape_string($conn, test_input($_POST['hobbies']));
-    $banking_card = mysqli_real_escape_string($conn, test_input($_POST['banking_card']));
-    $password = mysqli_real_escape_string($conn, test_input($_POST['password']));
+    $user_name = mysqli_real_escape_string($mysqli, test_input($_POST['user_name']));
+    $last_name = mysqli_real_escape_string($mysqli, test_input($_POST['last_name']));
+    $first_name = mysqli_real_escape_string($mysqli, test_input($_POST ['first_name']));
+    $age = mysqli_real_escape_string($mysqli, test_input($_POST ['age']));
+    $birthday = mysqli_real_escape_string($mysqli, test_input($_POST['birthday']));
+    $gender = mysqli_real_escape_string($mysqli, test_input($_POST['gender']));
+    $hobbies = mysqli_real_escape_string($mysqli, test_input($_POST['hobbies']));
+    $banking_card = mysqli_real_escape_string($mysqli, test_input($_POST['banking_card']));
+    $password = mysqli_real_escape_string($mysqli, test_input($_POST['password']));
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    $about_myself = mysqli_real_escape_string($conn, test_input($_POST['about_myself']));
-    $ListChoise_category = mysqli_real_escape_string($conn, test_input($_POST['ListChoise_category']));
+    $about_myself = mysqli_real_escape_string($mysqli, test_input($_POST['about_myself']));
+    $ListChoise_category = mysqli_real_escape_string($mysqli, test_input($_POST['ListChoise_category']));
 
     if (!preg_match("/^[a-zA-Z ]*$/", $user_name)) {
         $user_name_err = "Only letters and white space";
@@ -46,42 +47,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($password)) {
         $password_err = 'Please enter your password';
     }
+    $mysqli->query('CREATE TABLE IF NOT EXISTS`Persons` (
+    `PersonID` int(11) NOT NULL AUTO_INCREMENT,
+    `UserName` varchar(255) NOT NULL,
+    `LastName` varchar(255) NOT NULL,
+    `FirstName` varchar(255) ,
+    `Age` int(3) DEFAULT NULL,
+    `Gender` varchar(255),
+    `Hobbies` varchar(255),
+    `Password` varchar(255) NOT NULL,
+    `Birthday` date DEFAULT NULL,
+    `BankingCard` bigint(20) DEFAULT NULL,
+    `AboutMyself` VARCHAR,
+    `ListChoiseCategory` varchar(255) NOT NULL,
+    PRIMARY KEY (`PersonID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
 
-    if (!((isset($user_name_err) && $user_name_err) || (isset($user_name_err) && $user_name_err) || (isset($last_name_err) && $last_name_err) ||
-        (isset($first_name_err) && $first_name_err) || (isset($password_err) && $password_err))) {
-        $sql = "INSERT INTO Persons (UserName, LastName, FirstName, Age, Gender, Hobbies, Password, Birthday, BankingCard, AboutMyself, ListChoiseCategory) 
-            VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-        if ($stmt = mysqli_prepare($conn, $sql)) {
-
-            mysqli_stmt_bind_param($stmt, "sssissssiss", $p1, $p2, $p3, $p4, $p5, $p6, $p7, $p8, $p9, $p10, $p11);
-
-            if (isset ($user_name)) $p1 = $user_name;
-            if (isset ($last_name)) $p2 = $last_name;
-            if (isset ($last_name)) $p3 = $first_name;
-            if (isset ($age)) $p4 = $age;
-            if (isset ($gender)) $p5 = $gender;
-            if (isset($hobbies)) $p6 = $hobbies;
-            if (isset($hashed_password)) $p7 = $hashed_password;
-            if (isset($birthday) && $birthday != 0) $p8 = $birthday;
-            if (isset($banking_card)) $p9 = $banking_card;
-            if (isset($about_myself)) $p10 = $about_myself;
-            if (isset($ListChoise_category)) $p11 = $ListChoise_category;
-
-            if (mysqli_stmt_execute($stmt)) {
-                $success_msg = 'Account created';
-                header('Location: main.php');
-            } else {
-                $success_msg = 'DB Error' . mysqli_stmt_error($stmt);
-            }
-
-        }
+    $hide = "hide";
+    $sql = "INSERT INTO Persons (UserName, LastName, FirstName, Age, Gender, Hobbies, Password, Birthday, 
+            BankingCard, AboutMyself, ListChoiseCategory) 
+            VALUES ('$user_name', '$last_name', '$first_name', '$age', '$gender', '$hobbies', '$password', '$birthday',
+             '$banking_card', '$about_myself', '$ListChoise_category');";
+    if (mysqli_query($mysqli, $sql)) {
+        echo "Records added successfully.";
+    } else {
+        echo "ERROR: Could not able to execute $sql. " . mysqli_error($mysqli);
     }
+
+// close connection
+    mysqli_close($mysqli);
 }
-
-
 ?>
 
-<?php include('main.php'); ?>
+<?php include('index.php'); ?>
 <?php if (isset ($success_msg) && $success_msg):
     echo $success_msg;
 endif;
@@ -126,8 +124,8 @@ endif;
                 ?>*</label>
         </li>
         <li>
-            <label for="user-age">Age:</label>
-            <input type="text" name="age" id="user-age" value="<?php if (isset ($age)) echo $age; ?>">
+            <label for="user-age">Age:
+            <input type="text" name="age" id="user-age" value="<?php if (isset ($age)) echo $age; ?>">*</label>
         </li>
         <li>
             <label><input type="radio" name="gender" <?php if (isset($gender) && $gender == "male") echo "checked"; ?>
@@ -147,13 +145,13 @@ endif;
             </select>
         </li>
         <li>
-            <label for="birthday">Birthday:</label>
-            <input type="date" name="birthday" id="birthday" value="<?php echo $birthday; ?>">
+            <label for="birthday">Birthday:
+            <input type="date" name="birthday" id="birthday" value="<?php echo $birthday; ?>">*</label>
         </li>
         <li>
-            <label for="banking_card">Banking Card:</label>
+            <label for="banking_card">Banking Card:
             <input type="text" name="banking_card" id="banking_card"
-                   value="<?php if (isset ($banking_card)) echo $banking_card; ?>">
+                   value="<?php if (isset ($banking_card)) echo $banking_card; ?>">*</label>
 
         </li>
         <li>
