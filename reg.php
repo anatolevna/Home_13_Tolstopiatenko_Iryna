@@ -23,30 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $about_myself = mysqli_real_escape_string($mysqli, test_input($_POST['about_myself']));
     $ListChoise_category = mysqli_real_escape_string($mysqli, test_input($_POST['ListChoise_category']));
 
-    if (!preg_match("/^[a-zA-Z ]*$/", $user_name)) {
-        $user_name_err = "Only letters and white space";
-    }
-    if (empty($user_name)) {
-        $user_name_err = 'Please enter your name';
-    }
-
-    if (!preg_match("/^[a-zA-Z ]*$/", $last_name)) {
-        $last_name_err = "Only letters and white space";
-    }
-    if (empty($last_name)) {
-        $last_name_err = 'Please enter your last name';
-    }
-
-    if (empty($first_name)) {
-        $first_name_err = 'Please enter your first name';
-    }
-
-    if (strlen($password) < 6) {
-        $password_err = 'Password is at least 6 characters long';
-    }
-    if (empty($password)) {
-        $password_err = 'Please enter your password';
-    }
     $mysqli->query('CREATE TABLE IF NOT EXISTS`Persons` (
     `PersonID` int(11) NOT NULL AUTO_INCREMENT,
     `UserName` varchar(255) NOT NULL,
@@ -63,15 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     PRIMARY KEY (`PersonID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
 
-    $hide = "hide";
-    $sql = "INSERT INTO Persons (UserName, LastName, FirstName, Age, Gender, Hobbies, Password, Birthday, 
-            BankingCard, AboutMyself, ListChoiseCategory) 
-            VALUES ('$user_name', '$last_name', '$first_name', '$age', '$gender', '$hobbies', '$password', '$birthday',
-             '$banking_card', '$about_myself', '$ListChoise_category');";
-    if (mysqli_query($mysqli, $sql)) {
-        echo "Records added successfully.";
+    $result = $mysqli->query("INSERT INTO Persons (UserName, LastName, FirstName, Age, Gender, Hobbies, Password, Birthday, 
+            BankingCard, AboutMyself, ListChoiseCategory) VALUES('$user_name', '$last_name', '$first_name', '$age', '$gender', '$hobbies', '$password', '$birthday',
+             '$banking_card', '$about_myself', '$ListChoise_category')");
+// Проверяем, есть ли ошибки
+    if ($result == 'TRUE') {
+        echo "You have successfully registered!Now you can go to the site.<a href='index.php'>Main Page</a>";
     } else {
-        echo "ERROR: Could not able to execute $sql. " . mysqli_error($mysqli);
+        echo "Error! You are not registred.";
     }
 
 // close connection
@@ -125,7 +100,7 @@ endif;
         </li>
         <li>
             <label for="user-age">Age:
-            <input type="text" name="age" id="user-age" value="<?php if (isset ($age)) echo $age; ?>">*</label>
+                <input type="text" name="age" id="user-age" value="<?php if (isset ($age)) echo $age; ?>">*</label>
         </li>
         <li>
             <label><input type="radio" name="gender" <?php if (isset($gender) && $gender == "male") echo "checked"; ?>
@@ -146,12 +121,12 @@ endif;
         </li>
         <li>
             <label for="birthday">Birthday:
-            <input type="date" name="birthday" id="birthday" value="<?php echo $birthday; ?>">*</label>
+                <input type="date" name="birthday" id="birthday" value="<?php echo $birthday; ?>">*</label>
         </li>
         <li>
             <label for="banking_card">Banking Card:
-            <input type="text" name="banking_card" id="banking_card"
-                   value="<?php if (isset ($banking_card)) echo $banking_card; ?>">*</label>
+                <input type="text" name="banking_card" id="banking_card"
+                       value="<?php if (isset ($banking_card)) echo $banking_card; ?>">*
 
         </li>
         <li>

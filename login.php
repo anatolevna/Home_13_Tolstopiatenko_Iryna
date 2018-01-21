@@ -12,7 +12,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $UserName = trim($UserName);
     }
-
     // not empty passvord
     if (empty(trim($password))) {
         $password_error = 'Please enter your password';
@@ -20,38 +19,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password = trim($password);
     }
 
-    // Verifying
-    if (empty($UserName_error) && empty($password_error)) {
-
-        $sql = "SELECT UserName, Password FROM Persons WHERE UserName = ?";
-
-        if ($stmt = mysqli_prepare($mysqli, $sql)) {
-            // Bind variables to the parameters of the query being prepared
-            mysqli_stmt_bind_param($stmt, "s", $param_UserName);
-            // set parameters
-            $param_UserName = $UserName;
-            if (mysqli_stmt_execute($stmt)) {
-                mysqli_stmt_store_result($stmt);
-                if (mysqli_stmt_num_rows($stmt) == 1) {
-                    mysqli_stmt_bind_result($stmt, $UserName, $hashed_password);
-                    if (mysqli_stmt_fetch($stmt)) {
-                        if (password_verify($password, $hashed_password)) {
-                            session_start();
-                            $_SESSION['UserName'] = $UserName;
-                            $log_msg = 'You are logged in';
-                        } else {
-                            $password_error = 'The password you entered was not valid';
-                        }
-                    }
-                } else {
-                    $UserName_error = 'No account found with that UserName';
-                }
-            }
-        }
-        mysqli_stmt_close($stmt);
+    $result = $mysqli->query("SELECT * FROM `Persons` WHERE `UserName` = '$UserName' AND `password` = '$hashed_password'");
+    $user = $result->fetch_array();
+    if ($user) {
+        $isLoggedIn = true;
+    } else {
+        $isLoggedIn = false;
     }
     // close conection
-    mysqli_close($mysqli);
+    $mysqli->close();
 }
 ?>
 
